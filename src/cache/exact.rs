@@ -19,12 +19,25 @@ impl ExactResponseCache {
         self.entries.insert(key, value);
     }
 
+    pub fn contains(&self, key: &str) -> bool {
+        self.entries.contains_key(key)
+    }
+
     pub fn len(&self) -> usize {
         self.entries.len()
     }
 
     pub fn clear(&mut self) {
         self.entries.clear();
+    }
+
+    pub fn get_or_insert(&mut self, key: String, value: String) -> String {
+        if let Some(existing) = self.entries.get(&key).cloned() {
+            existing
+        } else {
+            self.entries.insert(key.clone(), value.clone());
+            value
+        }
     }
 }
 

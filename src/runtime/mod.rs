@@ -5,6 +5,7 @@ pub mod lm_head;
 pub mod transformer;
 
 use crate::config::RuntimeConfig;
+use crate::simd::{dot_product, rmsnorm, softmax};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
@@ -33,7 +34,17 @@ impl LocalRuntime {
             hasher.finish()
         };
         let token_count = max_tokens.max(1);
-        let mut out = format!("local::{prompt}::{}::", digest % 10_000);
+        let normalized = prompt.trim();
+        let embedding = normalized
+            .chars()
+            .map(|ch| ch as u32 as f32)
+            .collect::<Vec<_>>();
+        let weights = (0..embedding.len().min(12)).map(|i| (i as f32 + 1.0) / 10.0).collect::<Vec<_>>();
+        let attn = dot_product(&embedding, &weights);
+        let norm = rmsnorm(&weights, 1e-6);
+        let logits = softmax(&norm);
+        let score = logits.iter().sum::<f32>();
+        let mut out = format!("local::{normalized}::{}::{:.4}", digest % 10_000, attn + score);
         for i in 0..token_count {
             out.push_str(&format!("t{i}"));
         }

@@ -22,4 +22,12 @@ impl Storage {
     pub fn contains(&self, id: u64) -> bool {
         self.pages.contains_key(&id)
     }
+
+    pub fn persist(&mut self, id: u64, payload: &[u8]) {
+        self.pages.insert(id, payload.to_vec());
+    }
+
+    pub fn recover(&self, id: u64) -> Option<Vec<u8>> {
+        self.pages.get(&id).cloned()
+    }
 }
