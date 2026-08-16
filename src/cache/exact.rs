@@ -1,7 +1,8 @@
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Exact response cache keyed on normalized prompt and generation config.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct ExactResponseCache {
     entries: HashMap<String, String>,
 }
@@ -31,6 +32,10 @@ impl ExactResponseCache {
         self.entries.clear();
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.entries.is_empty()
+    }
+
     pub fn get_or_insert(&mut self, key: String, value: String) -> String {
         if let Some(existing) = self.entries.get(&key).cloned() {
             existing
@@ -38,6 +43,14 @@ impl ExactResponseCache {
             self.entries.insert(key.clone(), value.clone());
             value
         }
+    }
+
+    pub fn to_json(&self) -> String {
+        serde_json::to_string(self).unwrap_or_else(|_| "{}".to_string())
+    }
+
+    pub fn from_json(data: &str) -> Result<Self, serde_json::Error> {
+        serde_json::from_str(data)
     }
 }
 

@@ -54,3 +54,20 @@ fn corrupt_blocks_are_detected() {
     assert!(!block.is_valid());
     assert!(!block.has_complete_payload());
 }
+
+#[test]
+fn cache_serialization_roundtrip_is_stable() {
+    let mut cache = ExactResponseCache::new();
+    cache.insert("alpha".to_string(), "beta".to_string());
+    let payload = cache.to_json();
+    let decoded = ExactResponseCache::from_json(&payload).unwrap();
+    assert_eq!(decoded.get("alpha"), Some(&"beta".to_string()));
+}
+
+#[test]
+fn persistent_storage_recovers_valid_blocks() {
+    let mut storage = llm_engine::columnar::Storage::new();
+    storage.write_block(7, b"ok".to_vec());
+    assert_eq!(storage.read_block(7), Some(&b"ok".to_vec()));
+    assert!(storage.recover(7).is_some());
+}

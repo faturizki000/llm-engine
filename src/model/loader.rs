@@ -6,5 +6,6 @@ pub fn load_tiny_model() -> ModelConfig {
         hidden_size: 8,
         num_layers: 2,
         vocab_size: 32,
+        deterministic: true,
     }
 }

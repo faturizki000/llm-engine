@@ -21,6 +21,7 @@ pub mod tracing;
 pub mod utils;
 
 pub use cache::ExactResponseCache;
+pub use columnar::Storage;
 pub use config::RuntimeConfig;
 pub use orchestrator::ExecutionPlan;
 pub use provider::{InferenceProvider, LocalProvider};
