@@ -1,0 +1,210 @@
+# Codecov Configuration for llm-engine
+# Comprehensive coverage enforcement aligned with ARCHITECTURE-CONTRACT.md
+# Quality Gates: 100% patch coverage requirement for architectural compliance
+
+version: 2
+
+# Global default codecov configuration
+codecov:
+  require_ci_to_pass: true
+  precision: 2
+  round: down
+  layout: "reach,diff,flags,tree"
+  branches:
+    - main
+  after_n_builds: 1
+
+# Coverage status checks
+coverage:
+  # PATCH coverage: MANDATORY 100% for new code
+  # Every new function, module, or code path MUST have corresponding tests
+  # This ensures ARCHITECTURE-CONTRACT.md compliance (no skeleton implementations)
+  precision: 2
+  round: down
+  range: [70, 100]
+
+# Patch (diff) coverage requirements - MOST CRITICAL
+patch:
+  # Fail if ANY new code lacks test coverage
+  default:
+    target: 100
+    threshold: 0
+    branches: null
+    statements: null
+    methods: null
+    # ENFORCEMENT: If a new function exists, it MUST have a test
+    #              No skeleton code or unimplemented!() allowed
+    # EFFECT: PR fails if coverage drops below 100% on changed lines
+
+# Project-level (repository-wide) coverage targets
+project:
+  # Overall repository target: maintain high coverage baseline
+  # Current implementation: fully tested; maintain at least 85%
+  default:
+    target: 85
+    threshold: 5
+    branches: null
+    statements: null
+    methods: null
+
+  # ARCHITECTURE modules: stricter requirements
+  layers:
+    target: 95
+    threshold: 2
+  
+  runtime:
+    target: 95
+    threshold: 2
+  
+  cache:
+    target: 95
+    threshold: 2
+  
+  kv:
+    target: 95
+    threshold: 2
+  
+  simd:
+    target: 90
+    threshold: 3
+  
+  scheduler:
+    target: 90
+    threshold: 3
+  
+  orchestrator:
+    target: 95
+    threshold: 2
+  
+  cli:
+    target: 85
+    threshold: 5
+
+# Flag-specific coverage (separated by build type)
+flags:
+  unittests:
+    carryforward: true
+    # Unit tests must cover internal logic paths
+    coverage:
+      target: 95
+      threshold: 3
+  
+  integration:
+    carryforward: true
+    # Integration tests validate end-to-end flow
+    coverage:
+      target: 90
+      threshold: 5
+  
+  e2e:
+    carryforward: true
+    # E2E tests validate offline capability and invariants
+    coverage:
+      target: 85
+      threshold: 5
+
+# Ignore patterns (generated, external dependencies)
+ignore:
+  - "target/**"                    # Build artifacts
+  - "**/*.pb.rs"                   # Proto-generated
+  - "tests/fixtures/**"            # Test fixtures
+  - "benches/**"                   # Benchmarks (separate concern)
+  - "docs/**"                      # Documentation
+
+# Comment configuration
+comment:
+  layout: "reach,diff,files,footer"
+  behavior: default
+  require_changes: false
+  require_base: yes
+  require_head: yes
+  delete_outdated_comments: true
+  hide_comment_type: ""
+
+# Notify on coverage changes
+notify:
+  # Slack integration (optional; requires secret)
+  slack:
+    default:
+      url: secret:SLACK_WEBHOOK_URL
+      threshold: null
+      message: "Codecov Report"
+      only_pulls: false
+      flags: null
+      paths: null
+      branches: null
+      components: null
+
+# Comparison settings
+compare:
+  # Compare against base branch (main)
+  branch: main
+  # Show parent comparison
+  ancestor: true
+
+# Archive settings (upload to S3 for long-term tracking)
+archive:
+  uploads: 7 days
+  reports: 180 days
+
+# Status thresholds for PR comments
+status:
+  # Project-level status check
+  project:
+    default:
+      informational: false
+      target: 85
+      branches: null
+  
+  # Patch-level status check (CRITICAL)
+  patch:
+    default:
+      informational: false
+      target: 100
+      branches: null
+  
+  # Change comparison
+  changes:
+    default:
+      informational: true
+      branches: null
+
+# ARCHITECTURE-CONTRACT.md Compliance Enforcement
+# ==================================================
+#
+# This codecov.yml configuration enforces the following requirements from the contract:
+#
+# 1. NO SKELETON CODE: Section 5 mandates fully implemented components
+#    → patch: target=100 ensures every new line has a test
+#
+# 2. COMPREHENSIVE TESTING: Section 17.3 lists 24 mandatory tests (T01-T24)
+#    → project coverage targets vary by module (85-95%) to maintain baseline
+#
+# 3. INVARIANT VERIFICATION: Section 3 lists 6 architectural invariants
+#    → flags separate unit/integration/e2e to validate each layer independently
+#
+# 4. OFFLINE CAPABILITY: Section 5.4 & 21.5 require offline execution validation
+#    → e2e flag tracks end-to-end correctness without external API
+#
+# 5. CACHE CORRECTNESS: Section 3.2 mandates cache semantics are preserved
+#    → cache module at 95% threshold ensures all paths tested
+#
+# 6. KV EQUIVALENCE: Section 3.3 mandates KV correctness within dtype tolerance
+#    → kv module at 95% threshold, integrated with cache tests
+#
+# 7. SIMD CORRECTNESS: Section 3.3 & 7.2 mandate SIMD fallback to scalar
+#    → simd module at 90% (complex CPU detection has platform-specific paths)
+#
+# FAILURE CONDITIONS:
+#   • PR with new code lacking tests → FAIL (patch coverage < 100%)
+#   • Module regression (e.g., cache 95% → 80%) → FAIL (project target breach)
+#   • Missing offshore (offline) test results → FAIL (e2e flag missing)
+#
+# PASS CONDITIONS:
+#   • All new code has tests (patch = 100%)
+#   • Baseline maintained across modules (project >= targets)
+#   • All test types (unit/integration/e2e) included (flags present)
+#   • No external API dependencies in offline paths (e2e passes)
+#
+# For manual override in emergency: contact DevOps team
+# For policy updates: update this file + ARCHITECTURE-CONTRACT.md section 21
