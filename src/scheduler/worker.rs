@@ -12,4 +12,16 @@ impl WorkerPool {
     pub fn workers(&self) -> usize {
         self.workers
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.workers == 0
+    }
+
+    pub fn add_worker(&mut self) {
+        self.workers += 1;
+    }
+
+    pub fn remove_worker(&mut self) {
+        self.workers = self.workers.saturating_sub(1);
+    }
 }
