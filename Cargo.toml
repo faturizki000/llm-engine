@@ -1,0 +1,52 @@
+[package]
+name = "llm_engine"
+version = "0.1.0"
+edition = "2021"
+description = "Autonomous local LLM runtime in a single Rust binary"
+license = "Apache-2.0"
+readme = "README.md"
+
+[[bin]]
+name = "llm-engine"
+path = "src/main.rs"
+
+[features]
+default = ["local"]
+local = []
+server = ["dep:axum", "dep:tokio"]
+full = ["local", "server"]
+
+[dependencies]
+anyhow = "1.0"
+clap = { version = "4.0", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+uuid = { version = "1.0", features = ["v4"] }
+axum = { version = "0.7", optional = true }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"], optional = true }
+
+[dev-dependencies]
+assert_cmd = "2.0"
+predicates = "3.0"
+
+[[test]]
+name = "unit"
+path = "tests/unit/mod.rs"
+
+[[test]]
+name = "integration"
+path = "tests/integration/mod.rs"
+
+[[test]]
+name = "e2e"
+path = "tests/e2e/mod.rs"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -1,0 +1,7 @@
+{
+  "name": "tiny-model",
+  "layers": 2,
+  "hidden_size": 8,
+  "vocab_size": 32,
+  "deterministic": true
+}

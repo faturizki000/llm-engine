@@ -1,0 +1,14 @@
+name: E2E Offline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  offline-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --test e2e
